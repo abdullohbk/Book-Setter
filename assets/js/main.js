@@ -1,7 +1,7 @@
 "use stric"
 
 
-//----------------------HTML ELEMENTS
+
 const cardWrap = $('.card-wrapper');
 const searchInput = $('#search-input');
 const resaltBooks = $('#result-books');
@@ -9,17 +9,16 @@ const darcBtn = $('#darcmod-btn');
 const logo = $('#logo');
 const searchIcon =$('.bi-search');
 const bookmarcWrap = $(".bookmark-list");
-const toogleMenu = $('.toogle-menu');
+const toogleMenu = $('.toggle-menu');
 const toogleTitle = $('#toogl-title');
-const toogleMenuBtn = $('#toogl-menu-btn');
-const toogleMenuInfo = $('.toogl-menu-info');
+const toogleMenuBtn = $('#toggle-menu-btn');
+const toogleMenuInfo = $('.toggle-menu-info');
 
 
 
 
 
-//--------------------GLOBOL VERAEBLIS
-let besUrl = 'https://www.googleapis.com/books/v1';
+let baseUrl = 'https://www.googleapis.com/books/v1';
 
 let bookmarkList =JSON.parse(localStorage.getItem('bookmark')) ? JSON.parse(localStorage.getItem('bookmark')) : []
 
@@ -29,7 +28,7 @@ let bookmarkListClassName="w-full p-4 rounded-lg mb-3  cursor-pointer   bg-indig
 
 
 
-//----------Funcsiya token bo'lmasa login pajga chiqarvoradi
+
 (function (){
     let token = localStorage.getItem('token');
     if(!token){
@@ -41,12 +40,7 @@ function logiOut() {
       localStorage.removeItem('token');
       window.location.href = "../../pages/login.html";
 }
-//-----------------------------------------------------------
 
-
-
-//---------------search book lionk   https://www.googleapis.com/books/v1/volumes?q=computer science&startIndex=0&maxResults=3
-//--------respons data ----------------
 async function responsDat(url) {
     cardWrap.innerHTML=`<span class="loader"></span>`;
     let respons = await fetch(url+"/volumes?q=harry&startIndex=1");
@@ -54,10 +48,9 @@ async function responsDat(url) {
     let data = await  result.items;
     renderData (data)
 }
-responsDat(besUrl);
+responsDat(baseUrl);
 
 
-//--------------Render card-----------------
 function renderData (data){
      cardWrap.innerHTML = "";
      resaltBooks.textContent = `Showing ${data.length} Result(s)`
@@ -89,11 +82,7 @@ function renderData (data){
          cardWrap.appendChild(card);
      });
 }
-//-----------------------------------------
 
-
-
-//--------------SEARCH BOOKS-------
 searchInput.addEventListener('keyup', (e)=>{
   if(e.keyCode == 13 && e.target.value.trim().length){
       let bookName = e.target.value;
@@ -108,11 +97,8 @@ async function serchBook(bookName) {
     let books = await result.items
     renderData(books);
 }
-//-----------------------------------------------
 
 
-
-//---------------Bookmarkka qo'shish ------------
 cardWrap.addEventListener("click" , (e)=>{
    if(e.target.classList.contains("bookmark")){
      let id = e.target.dataset.id;
@@ -122,38 +108,36 @@ cardWrap.addEventListener("click" , (e)=>{
 
 async function getDataById(id) {
   try{
-    let response = await fetch(`${besUrl}/volumes/${id}`);
-    let resalt = await response.json()
+    let response = await fetch(`${baseUrl}/volumes/${id}`);
+    let result = await response.json()
     if(bookmarkList.length){
       let duplicate = bookmarkList.map((el)=> el.id);
 
       if(!duplicate.includes(id)){
-         bookmarkList.push(resalt)
+         bookmarkList.push(result)
          localStorage.setItem("bookmark" , JSON.stringify(bookmarkList));
          renderBookmark()
-         // toaster 
+         
 
       }else{
-        // toaster 
+        
       }
     }else{
-      bookmarkList.push(resalt);
+      bookmarkList.push(result);
       renderBookmark()
-      // toaster 
+    
     }
   }catch(err){
-    console.log(err.masseg);
+    console.log(err.massege);
   }
 }
-//----------------------------------------------
 
 
 
-//---------------Bookmarkka renderlash ------------
 function renderBookmark() {
   bookmarcWrap.innerHTML='';
   bookmarkList.forEach((el)=>{
-    let cantentLi = render("li", bookmarkListClassName , `
+    let contentLi = render("li", bookmarkListClassName , `
     <p class="flex flex-col">
         <strong class="text-[14px] font-semibold text-black">${el.volumeInfo.title}</strong>
         <span class="text-[13px] font-medium text-[rgba(117,120,129,1)]">${el.volumeInfo.authors}</span>
@@ -167,16 +151,13 @@ function renderBookmark() {
         </button>
     </span>
     `)
-    bookmarcWrap.appendChild(cantentLi);
+    bookmarcWrap.appendChild(contentLi);
   })
 }
 renderBookmark()
-//-------------------------------------------------
 
 
 
-
-//--------------------Bookmarcdan o'chirish--------
 bookmarcWrap.addEventListener("click", (e)=>{
   if(e.target.classList.contains('delete-book')){
     let deletBookId = e.target.dataset.id;
@@ -185,10 +166,9 @@ bookmarcWrap.addEventListener("click", (e)=>{
     localStorage.setItem("bookmark" , JSON.stringify(bookmarkFilter));
     bookmarkList =JSON.parse(localStorage.getItem('bookmark'));
     renderBookmark()
-    // window.location.reload()
+  
   }
 })
-//-------------------------------------------------
 
 
 
@@ -196,34 +176,33 @@ bookmarcWrap.addEventListener("click", (e)=>{
 
 
 
-//---------------Toogle menu function----------------------
+
+
 cardWrap.addEventListener("click", (e)=>{
     if(e.target.classList.contains("book-more")){
       let id = e.target.dataset.id
-      toogleMenu.classList.toggle('hide-toogle-menu')
+      toogleMenu.classList.toggle('hide-toggle-menu')
       tooglInfo(id)
     }
 })
 
 async function tooglInfo(id) {
   try{
-     let response = await fetch(`${besUrl}/volumes/${id}`);
+     let response = await fetch(`${baseUrl}/volumes/${id}`);
      let result = await response.json()
      toogleMenuInfo.innerHTML=`<span class="loader"></span>`
      renderTooglInfo(result.volumeInfo);
   }catch(err){
-     console.log(err.masseg);
+     console.log(err.massege);
   }
 }
-//-------------------------------------------------
 
 
 
-//--Render toogle menu info------------------
 function renderTooglInfo(obj) {
   toogleMenuInfo.textContent='';
   toogleTitle.textContent=`${obj.title.length > 35 ? obj.title.slice(0,32)+'...': obj.title }`
-  let infoCantent = render('div' , '' , `
+  let infoContent = render('div' , '' , `
   <img src="${obj.imageLinks.thumbnail}" alt="img" class="mx-auto mb-[51px]">
   <p class="px-[40px] mb-[50px] text-[#58667E]">${obj.title}</p>
   <p class="px-[40px] flex items-center gap-4 mb-4">
@@ -250,16 +229,16 @@ function renderTooglInfo(obj) {
       <a href="${obj.previewLink}" class="py-1 px-8 rounded-sm bg-[#75828A] text-white text-center">Read</a>
   </div>
   `)
-  toogleMenuInfo.appendChild(infoCantent);
+  toogleMenuInfo.appendChild(infoContent);
 }
-//-------------------------------------------
 
 
-//---------------------Toogle menu btn ---------
+
+
 toogleMenuBtn.addEventListener('click',()=>{
-  toogleMenu.classList.toggle('hide-toogle-menu')
+  toogleMenu.classList.toggle('hide-toggle-menu')
 })
-////--------------------------
+
 
 
 
